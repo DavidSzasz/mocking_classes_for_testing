@@ -2,5 +2,6 @@
   <Project Path="Application/Application.csproj" />
   <Project Path="Domain/Domain.csproj" />
   <Project Path="Infrastructure/Infrastructure.csproj" />
+  <Project Path="Mocks/Tests.csproj" Id="4bf73146-9d52-4d30-aeab-af1cf612f6ed" />
   <Project Path="Presantation/Presentation.csproj" />
 </Solution>
