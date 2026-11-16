@@ -91,5 +91,39 @@ namespace Tests
 
             await userRepository.Received(1).GetByIdAsync(Arg.Any<int>());
         }
+
+        [Fact]
+        public async Task GetAllUsersAsync_ReturnsListOfGetUserResponseDtos()
+        {
+            //  Arrange
+            var (userRepository, userService) = CreateMockedIURepoAndUServ();
+
+            User user = new User
+            {
+                Id = 1,
+                Username = "testuser",
+                Email = "testuser@example.com",
+                PasswordHash = "Hashedpassword123",
+                Role = Role.USER,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            Task<IEnumerable<User>> userTask = Task.FromResult(Enumerable.Repeat(user, 1));
+
+            userRepository.GetAllAsync().Returns(userTask);
+
+            //  Act
+            var result = await userService.GetAllUsersAsync();
+
+            //  Assert
+            Assert.NotNull(result);
+            Assert.Equal(user.Id, result.First().Id);
+            Assert.Equal(user.Username, result.First().Username);
+            Assert.Equal(user.Email, result.First().Email);
+            Assert.Equal(user.Role, result.First().Role);
+            Assert.Equal(user.CreatedAt, result.First().CreatedAt);
+
+            await userRepository.Received(1).GetAllAsync();
+        }
     }
 }
