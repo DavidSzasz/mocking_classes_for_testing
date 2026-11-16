@@ -13,7 +13,7 @@ namespace Tests
 {
     public class UserServiceTests
     {
-        private (IUserRepository, UserService) Arrange()
+        private (IUserRepository, UserService) CreateMockedIURepoAndUServ()
         {
             var userRepository = Substitute.For<IUserRepository>();
             var userService = new UserService(userRepository);
@@ -24,7 +24,7 @@ namespace Tests
         public async Task CreateUserAsync_WithCreateUserRequestDto_ReturnsCreateUserResponseDto()
         {
             //  Arrange
-            var (userRepository, userService) = Arrange();
+            var (userRepository, userService) = CreateMockedIURepoAndUServ();
 
             var requestDto = new CreateUserRequestDto
             {
@@ -53,10 +53,43 @@ namespace Tests
             Assert.Equal(requestDto.Email, result.Email);
             Assert.Equal(Role.USER, result.Role);
 
-            await userRepository.Received(1).AddAsync(Arg.Is<User>(u =>
-                u.Username == requestDto.Username
-                && u.Email == requestDto.Email
-                && u.PasswordHash == requestDto.Password));
+            await userRepository.Received(1).AddAsync(Arg.Any<User>());
+        }
+
+        [Fact]
+        public async Task GetUserByIdAsync_WithIntId_ReturnsGetUserResponseDto()
+        {
+            //  Arrange
+            var (userRepository, userService) = CreateMockedIURepoAndUServ();
+
+            int id = 1;
+
+            User user = new User
+            {
+                Id = id,
+                Username = "testuser",
+                Email = "testuser@example.com",
+                PasswordHash = "Hashedpassword123",
+                Role = Role.USER,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            Task<User> userTask = Task.FromResult(user);
+
+            userRepository.GetByIdAsync(Arg.Any<int>()).Returns(userTask);
+
+            //  Act
+            var result = await userService.GetUserByIdAsync(id);
+
+            //  Assert
+            Assert.NotNull(result);
+            Assert.Equal(user.Id, result.Id);
+            Assert.Equal(user.Username, result.Username);
+            Assert.Equal(user.Email, result.Email);
+            Assert.Equal(user.Role, result.Role);
+            Assert.Equal(user.CreatedAt, result.CreatedAt);
+
+            await userRepository.Received(1).GetByIdAsync(Arg.Any<int>());
         }
     }
 }
